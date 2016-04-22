@@ -34,8 +34,6 @@
         <property name="annotatedClasses">  
             <list>  
                 <value>com.hossam.abyb.persistence.entities.Question</value>
-                <value>com.hossam.abyb.persistence.entities.QuestionTag</value>
-                <value>com.hossam.abyb.persistence.entities.QuestionTagPK</value>
                 <value>com.hossam.abyb.persistence.entities.Reply</value>
                 <value>com.hossam.abyb.persistence.entities.Tag</value>
                 <value>com.hossam.abyb.persistence.entities.User</value>

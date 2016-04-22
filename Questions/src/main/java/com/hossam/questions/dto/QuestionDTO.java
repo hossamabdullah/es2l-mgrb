@@ -7,6 +7,7 @@ package com.hossam.questions.dto;
 
 import com.hossam.abyb.persistence.entities.Question;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -14,6 +15,7 @@ import java.util.List;
  * @author Hossam ElDeen
  */
 public class QuestionDTO {
+
     Integer id;
     String header;
     String body;
@@ -58,7 +60,11 @@ public class QuestionDTO {
     }
 
     public String[] getPicturesUrl() {
-        return picturesUrl.split(",");
+        if (picturesUrl == null) {
+            return null;
+        } else {
+            return picturesUrl.split(",");
+        }
     }
 
     public void setPicturesUrl(String picturesUrl) {
@@ -80,8 +86,8 @@ public class QuestionDTO {
     public void setDown(Integer down) {
         this.down = down;
     }
-    
-    public static QuestionDTO fromEntity(Question question){
+
+    public static QuestionDTO fromEntity(Question question) {
         QuestionDTO questionDTO = new QuestionDTO();
         questionDTO.setBody(question.getBody());
         questionDTO.setDown(question.getDown());
@@ -91,10 +97,10 @@ public class QuestionDTO {
         questionDTO.setUp(question.getUp());
         return questionDTO;
     }
-    
-    public static List<QuestionDTO> fromListOfEntities(List<Question> questions){
+
+    public static List<QuestionDTO> fromListOfEntities(Collection<Question> questions) {
         List<QuestionDTO> questionDTOs = new ArrayList<>();
-        for(Question question : questions){
+        for (Question question : questions) {
             questionDTOs.add(fromEntity(question));
         }
         return questionDTOs;

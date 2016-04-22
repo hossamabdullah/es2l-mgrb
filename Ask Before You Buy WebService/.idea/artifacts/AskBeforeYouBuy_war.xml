@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="AskBeforeYouBuy:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="AskBeforeYouBuyWebService.war">
+      <element id="artifact" artifact-name="AskBeforeYouBuy:war exploded" />
+    </root>
+  </artifact>
+</component>

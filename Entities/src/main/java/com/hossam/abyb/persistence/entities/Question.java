@@ -7,6 +7,7 @@ package com.hossam.abyb.persistence.entities;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -15,7 +16,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -23,6 +26,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  *
@@ -40,6 +44,12 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Question.findByDown", query = "SELECT q FROM Question q WHERE q.down = :down"),
     @NamedQuery(name = "Question.findByDisabled", query = "SELECT q FROM Question q WHERE q.disabled = :disabled")})
 public class Question implements Serializable {
+
+    @JoinTable(name = "question_tags", joinColumns = {
+        @JoinColumn(name = "QUESTION_id", referencedColumnName = "id")}, inverseJoinColumns = {
+        @JoinColumn(name = "TAG_id", referencedColumnName = "id")})
+    @ManyToMany
+    private Collection<Tag> tagCollection;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,14 +72,17 @@ public class Question implements Serializable {
     @Basic(optional = false)
     @Column(name = "disabled")
     private boolean disabled;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "question")
-    private Collection<QuestionTag> questionTags;
+    @JoinTable(name = "question_tags", joinColumns = {
+        @JoinColumn(name = "QUESTION_id", referencedColumnName = "id")}, inverseJoinColumns = {
+        @JoinColumn(name = "TAG_id", referencedColumnName = "id")})
+    @ManyToMany
+    private List<Tag> tags;
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private User ownerId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "question")
     private Collection<UserQuestionRate> usersRatings;
-    
+
     public Question() {
     }
 
@@ -141,12 +154,12 @@ public class Question implements Serializable {
     }
 
     @XmlTransient
-    public Collection<QuestionTag> getQuestionTags() {
-        return questionTags;
+    public List<Tag> getTags() {
+        return tags;
     }
 
-    public void setQuestionTags(Collection<QuestionTag> questionTags) {
-        this.questionTags = questionTags;
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 
     public User getOwnerId() {
@@ -190,5 +203,15 @@ public class Question implements Serializable {
     public void setUsersRatings(Collection<UserQuestionRate> usersRatings) {
         this.usersRatings = usersRatings;
     }
-    
+
+    @XmlTransient
+    @JsonIgnore
+    public Collection<Tag> getTagCollection() {
+        return tagCollection;
+    }
+
+    public void setTagCollection(Collection<Tag> tagCollection) {
+        this.tagCollection = tagCollection;
+    }
+
 }

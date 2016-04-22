@@ -13,17 +13,17 @@ import com.hossam.questions.dto.QuestionAddingDTO;
 import com.hossam.questions.dto.QuestionDeletingDTO;
 import com.hossam.questions.dto.QuestionRatingDTO;
 import com.hossam.questions.dto.QuestionRetrievalDTO;
-import com.sun.jersey.multipart.FormDataBodyPart;
-import com.sun.jersey.multipart.FormDataMultiPart;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -50,35 +50,10 @@ public class QuestionService {
     @POST
     @Path("/add")
     @Produces(MediaType.APPLICATION_JSON)
-    public ServiceStatusDTO addQuestion(FormDataMultiPart multiPart) {
-        //getting data from form parameters
-        FormDataBodyPart headerElement = multiPart.getField("header");
-        FormDataBodyPart bodyElement = multiPart.getField("body");
-        FormDataBodyPart ownerIdElement = multiPart.getField("owner_id");
-        List<FormDataBodyPart> fields = multiPart.getFields("pictures");
-        int numOfPictures = fields.size();
-        String picturesUrl = "";
-        for (FormDataBodyPart field : fields) {
-            String fileName = field.getFormDataContentDisposition().getFileName();
-            picturesUrl += handleInputStream(field.getValueAs(InputStream.class), "C://uploaded/" + fileName);
-            picturesUrl += ";";
-        }
-
-        //converting data into regular data types
-        String header = null;
-        if (headerElement != null) {
-            header = headerElement.getValue();
-        }
-        String body = null;
-        if (bodyElement != null) {
-            body = bodyElement.getValue();
-        }
-        Integer ownerId = null;
-        if (ownerIdElement != null) {
-            ownerId = ownerIdElement.getValueAs(Integer.class);
-        }
-
-        //check send parameters
+    public ServiceStatusDTO addQuestion(@FormParam("header")String header,
+            @FormParam("body")String body,
+            @FormParam("owner_id")Integer ownerId,
+            @FormParam("pictures_url")String picturesUrl) {
         Map argumentsMap = new HashMap<String, Object>();
         argumentsMap.put("header", header);
         argumentsMap.put("body", body);
@@ -90,67 +65,6 @@ public class QuestionService {
 
         QuestionAddingDTO questionAddingDTO = new QuestionAddingDTO(header, body, picturesUrl, ownerId);
         ServiceStatusDTO serviceStatusDTO = questionDelegate.addQuestion(questionAddingDTO);
-        holdWhilePicturesGetUploaded(numOfPictures);
-        return serviceStatusDTO;
-    }
-
-    private String handleInputStream(final InputStream uploadedInputStream, final String uploadedFileLocation) {
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    OutputStream out = new FileOutputStream(new File(uploadedFileLocation));
-                    int read = 0;
-                    byte[] bytes = new byte[1024];
-                    out = new FileOutputStream(new File(uploadedFileLocation));
-                    while ((read = uploadedInputStream.read(bytes)) != -1) {
-                        out.write(bytes, 0, read);
-                    }
-                    out.flush();
-                    out.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    if (request.getAttribute("picturesUploaded") == null) {
-                        request.setAttribute("picturesUploaded", 1);
-                    } else {
-                        Integer numOfUploadedPics = (Integer) request.getAttribute("picturesUploaded");
-                        request.setAttribute("picturesUploaded", numOfUploadedPics + 1);
-                    }
-                }
-            }
-        }).start();
-
-        return uploadedFileLocation;
-    }
-
-    private void holdWhilePicturesGetUploaded(int numOfPictures) {
-        Integer numOfPicturesUploaded = (Integer) request.getAttribute("picturesUploaded");
-        while (numOfPicturesUploaded == null || numOfPicturesUploaded < numOfPictures) {
-            numOfPicturesUploaded = (Integer) request.getAttribute("picturesUploaded");
-        }
-    }
-
-    @POST
-    @Path("/rate")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ServiceStatusDTO rateQuestion(
-            @FormParam("user_id") Integer userId,
-            @FormParam("question_id") Integer questionId,
-            @FormParam("is_up_vote") Boolean upVote) {
-
-        Map argumentsMap = new HashMap<String, Object>();
-        argumentsMap.put("user_id", userId);
-        argumentsMap.put("question_id", questionId);
-        argumentsMap.put("is_up_vote", upVote);
-        String argumentsErrorMessage = ValidationUtil.checkExistenceOfArguments(argumentsMap);
-        if (argumentsErrorMessage != null) {
-            return new ServiceStatusDTO("FAILED", argumentsErrorMessage);
-        }
-
-        QuestionRatingDTO questionRatingDTO = new QuestionRatingDTO(questionId, userId, upVote);
-        ServiceStatusDTO serviceStatusDTO = questionDelegate.rateQuestion(questionRatingDTO);
         return serviceStatusDTO;
     }
 
@@ -179,16 +93,7 @@ public class QuestionService {
     @Produces(MediaType.APPLICATION_JSON)
     public ServiceDataWrapperDTO searchWithId(
             @FormParam("question_id") Integer questionId) {
-        Map argumentsMap = new HashMap<String, Object>();
-        argumentsMap.put("question_id", questionId);
-        String argumentsErrorMessage = ValidationUtil.checkExistenceOfArguments(argumentsMap);
-        if (argumentsErrorMessage != null) {
-            return new ServiceDataWrapperDTO(null, "FAILED", argumentsErrorMessage);
-        }
-
-        QuestionRetrievalDTO questionRetrievalDTO = new QuestionRetrievalDTO(questionId, QuestionRetrievalDTO.RetrievalType.ID);
-        ServiceDataWrapperDTO serviceDataWrapperDTO = questionDelegate.search(questionRetrievalDTO);
-        return serviceDataWrapperDTO;
+        return search("question_id", questionId, QuestionRetrievalDTO.RetrievalType.ID);
     }
 
     @POST
@@ -196,16 +101,7 @@ public class QuestionService {
     @Produces(MediaType.APPLICATION_JSON)
     public ServiceDataWrapperDTO searchWithHeader(
             @FormParam("header") String header) {
-        Map argumentsMap = new HashMap<String, Object>();
-        argumentsMap.put("header", header);
-        String argumentsErrorMessage = ValidationUtil.checkExistenceOfArguments(argumentsMap);
-        if (argumentsErrorMessage != null) {
-            return new ServiceDataWrapperDTO(null, "FAILED", argumentsErrorMessage);
-        }
-
-        QuestionRetrievalDTO questionRetrievalDTO = new QuestionRetrievalDTO(header, QuestionRetrievalDTO.RetrievalType.HEADER);
-        ServiceDataWrapperDTO serviceDataWrapperDTO = questionDelegate.search(questionRetrievalDTO);
-        return serviceDataWrapperDTO;
+        return search("header", header, QuestionRetrievalDTO.RetrievalType.HEADER);
     }
 
     @POST
@@ -213,16 +109,7 @@ public class QuestionService {
     @Produces(MediaType.APPLICATION_JSON)
     public ServiceDataWrapperDTO searchWithBody(
             @FormParam("body") String body) {
-        Map argumentsMap = new HashMap<String, Object>();
-        argumentsMap.put("body", body);
-        String argumentsErrorMessage = ValidationUtil.checkExistenceOfArguments(argumentsMap);
-        if (argumentsErrorMessage != null) {
-            return new ServiceDataWrapperDTO(null, "FAILED", argumentsErrorMessage);
-        }
-
-        QuestionRetrievalDTO questionRetrievalDTO = new QuestionRetrievalDTO(body, QuestionRetrievalDTO.RetrievalType.BODY);
-        ServiceDataWrapperDTO serviceDataWrapperDTO = questionDelegate.search(questionRetrievalDTO);
-        return serviceDataWrapperDTO;
+        return search("body", body, QuestionRetrievalDTO.RetrievalType.BODY);
     }
 
     @POST
@@ -230,28 +117,27 @@ public class QuestionService {
     @Produces(MediaType.APPLICATION_JSON)
     public ServiceDataWrapperDTO searchWithHeaderOrBody(
             @FormParam("key") String key) {
-        Map argumentsMap = new HashMap<String, Object>();
-        argumentsMap.put("key", key);
-        String argumentsErrorMessage = ValidationUtil.checkExistenceOfArguments(argumentsMap);
-        if (argumentsErrorMessage != null) {
-            return new ServiceDataWrapperDTO(null, "FAILED", argumentsErrorMessage);
-        }
-
-        QuestionRetrievalDTO questionRetrievalDTO = new QuestionRetrievalDTO(key, QuestionRetrievalDTO.RetrievalType.HEADER_OR_BODY);
-        ServiceDataWrapperDTO serviceDataWrapperDTO = questionDelegate.search(questionRetrievalDTO);
-        return serviceDataWrapperDTO;
+        return search("key", key, QuestionRetrievalDTO.RetrievalType.HEADER_OR_BODY);
     }
 
+    @POST
+    @Path("/searchWithTags")
+    @Produces(MediaType.APPLICATION_JSON)
     public ServiceDataWrapperDTO searchWithTags(
             @FormParam("tags") List<String> tags) {
+        return search("tags", tags, QuestionRetrievalDTO.RetrievalType.TAG);
+    }
+
+    private ServiceDataWrapperDTO search(String name, Object key, QuestionRetrievalDTO.RetrievalType retrievalType) {
         Map argumentsMap = new HashMap<String, Object>();
-        argumentsMap.put("tags", tags);
+        argumentsMap.put(name, key);
         String argumentsErrorMessage = ValidationUtil.checkExistenceOfArguments(argumentsMap);
         if (argumentsErrorMessage != null) {
             return new ServiceDataWrapperDTO(null, "FAILED", argumentsErrorMessage);
         }
-        
-        //TODO create task
-        return null;
+
+        QuestionRetrievalDTO questionRetrievalDTO = new QuestionRetrievalDTO(key, retrievalType);
+        ServiceDataWrapperDTO serviceDataWrapperDTO = questionDelegate.search(questionRetrievalDTO);
+        return serviceDataWrapperDTO;
     }
 }

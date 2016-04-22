@@ -12,7 +12,7 @@ package com.hossam.questions.dto;
 public class QuestionRetrievalDTO {
     private Object keyword;
     private RetrievalType retrievalType;
-    public static enum RetrievalType { ID, HEADER, BODY, HEADER_OR_BODY};
+    public static enum RetrievalType { ID, HEADER, BODY, HEADER_OR_BODY, TAG};
 
     public QuestionRetrievalDTO() {
     }

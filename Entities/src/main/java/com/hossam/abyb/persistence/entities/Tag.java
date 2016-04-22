@@ -7,19 +7,20 @@ package com.hossam.abyb.persistence.entities;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import org.codehaus.jackson.annotate.JsonIgnore;
 
 /**
  *
@@ -34,6 +35,9 @@ import javax.xml.bind.annotation.XmlTransient;
     @NamedQuery(name = "Tag.findByTitle", query = "SELECT t FROM Tag t WHERE t.title = :title"),
     @NamedQuery(name = "Tag.findByDisabled", query = "SELECT t FROM Tag t WHERE t.disabled = :disabled")})
 public class Tag implements Serializable {
+
+    @ManyToMany(mappedBy = "tagCollection")
+    private Collection<Question> questionCollection;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,8 +50,8 @@ public class Tag implements Serializable {
     @Basic(optional = false)
     @Column(name = "disabled")
     private boolean disabled;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "tag")
-    private Collection<QuestionTag> tagQuestions;
+    @ManyToMany(mappedBy = "tags")
+    private List<Question> questions;
 
     public Tag() {
     }
@@ -87,12 +91,12 @@ public class Tag implements Serializable {
     }
 
     @XmlTransient
-    public Collection<QuestionTag> getTagQuestions() {
-        return tagQuestions;
+    public List<Question> getQuestions() {
+        return questions;
     }
 
-    public void setTagQuestions(Collection<QuestionTag> tagQuestions) {
-        this.tagQuestions = tagQuestions;
+    public void setQuestions(List<Question> questions) {
+        this.questions = questions;
     }
 
     @Override
@@ -109,15 +113,26 @@ public class Tag implements Serializable {
             return false;
         }
         Tag other = (Tag) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+        if (this.title.equals(other.title)) {
+            return true;
+        } else {
             return false;
         }
-        return true;
     }
 
     @Override
     public String toString() {
         return "pojos.Tags[ id=" + id + " ]";
     }
-    
+
+    @XmlTransient
+    @JsonIgnore
+    public Collection<Question> getQuestionCollection() {
+        return questionCollection;
+    }
+
+    public void setQuestionCollection(Collection<Question> questionCollection) {
+        this.questionCollection = questionCollection;
+    }
+
 }

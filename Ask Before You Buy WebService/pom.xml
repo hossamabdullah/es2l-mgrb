@@ -251,6 +251,13 @@
         </dependency>
         
         <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.3.1</version>
+        </dependency>
+
+        
+        <dependency>
             <groupId>com.hossam</groupId>
             <artifactId>Skeleton</artifactId>
             <version>1.0-SNAPSHOT</version>
