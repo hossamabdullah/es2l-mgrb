@@ -36,8 +36,6 @@ import org.codehaus.jackson.annotate.JsonIgnore;
     @NamedQuery(name = "Tag.findByDisabled", query = "SELECT t FROM Tag t WHERE t.disabled = :disabled")})
 public class Tag implements Serializable {
 
-    @ManyToMany(mappedBy = "tagCollection")
-    private Collection<Question> questionCollection;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -124,15 +122,4 @@ public class Tag implements Serializable {
     public String toString() {
         return "pojos.Tags[ id=" + id + " ]";
     }
-
-    @XmlTransient
-    @JsonIgnore
-    public Collection<Question> getQuestionCollection() {
-        return questionCollection;
-    }
-
-    public void setQuestionCollection(Collection<Question> questionCollection) {
-        this.questionCollection = questionCollection;
-    }
-
 }

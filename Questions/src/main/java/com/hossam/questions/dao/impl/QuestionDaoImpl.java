@@ -7,6 +7,7 @@ package com.hossam.questions.dao.impl;
 
 import com.hossam.abyb.persistence.entities.Question;
 import com.hossam.abyb.persistence.entities.Tag;
+import com.hossam.abyb.persistence.entities.User;
 import com.hossam.questions.dao.QuestionDao;
 import com.hossam.questions.dto.QuestionDTO;
 import com.hossam.questions.dto.QuestionRetrievalDTO;
@@ -60,7 +61,12 @@ public class QuestionDaoImpl extends QuestionDao {
             SimpleExpression eq2 = Restrictions.eq("body", questionRetrievalDTO.getKeyword());
             criteria.add(Restrictions.or(eq1, eq2));
         }
-
+        
+        if(questionRetrievalDTO.getRetrievalType() == QuestionRetrievalDTO.RetrievalType.USER_ID){
+            User user = (User) load(User.class, (Integer)questionRetrievalDTO.getKeyword());
+            criteria.add(Restrictions.eq("ownerId", user));
+        }
+        
         if (questionRetrievalDTO.getRetrievalType() == QuestionRetrievalDTO.RetrievalType.TAG) {
             criteria = getSessionFactory().getCurrentSession().createCriteria(Tag.class);
             List<String> fetchTags = (List<String>) questionRetrievalDTO.getKeyword();

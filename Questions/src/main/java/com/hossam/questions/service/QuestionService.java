@@ -127,6 +127,14 @@ public class QuestionService {
             @FormParam("tags") List<String> tags) {
         return search("tags", tags, QuestionRetrievalDTO.RetrievalType.TAG);
     }
+    
+    @POST
+    @Path("/searchWithOwnerId")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ServiceDataWrapperDTO searchWithOwnerId(
+            @FormParam("owner_id")String key){
+        return search("owner_id", key, QuestionRetrievalDTO.RetrievalType.USER_ID);
+    }
 
     private ServiceDataWrapperDTO search(String name, Object key, QuestionRetrievalDTO.RetrievalType retrievalType) {
         Map argumentsMap = new HashMap<String, Object>();

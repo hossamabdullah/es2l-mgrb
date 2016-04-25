@@ -58,6 +58,9 @@ public class Reply implements Serializable {
     @Basic(optional = false)
     @Column(name = "disabled")
     private boolean disabled;
+    @JoinColumn(name = "question_id", referencedColumnName = "id")
+    @ManyToOne(optional = false)
+    private Question question;
     @OneToMany(mappedBy = "parentReply")
     private Collection<Reply> replies;
     @JoinColumn(name = "parent_reply_id", referencedColumnName = "id")
@@ -129,7 +132,15 @@ public class Reply implements Serializable {
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
     }
+    
+    public Question getQuestion() {
+        return question;
+    }
 
+    public void setQuestion(Question question) {
+        this.question = question;
+    }
+    
     @XmlTransient
     public Collection<Reply> getReplies() {
         return replies;

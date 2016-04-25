@@ -45,11 +45,6 @@ import org.codehaus.jackson.annotate.JsonIgnore;
     @NamedQuery(name = "Question.findByDisabled", query = "SELECT q FROM Question q WHERE q.disabled = :disabled")})
 public class Question implements Serializable {
 
-    @JoinTable(name = "question_tags", joinColumns = {
-        @JoinColumn(name = "QUESTION_id", referencedColumnName = "id")}, inverseJoinColumns = {
-        @JoinColumn(name = "TAG_id", referencedColumnName = "id")})
-    @ManyToMany
-    private Collection<Tag> tagCollection;
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -82,6 +77,8 @@ public class Question implements Serializable {
     private User ownerId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "question")
     private Collection<UserQuestionRate> usersRatings;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "question")
+    private Collection<Reply> replies;
 
     public Question() {
     }
@@ -104,7 +101,16 @@ public class Question implements Serializable {
     public void setId(Integer id) {
         this.id = id;
     }
+    
+    @XmlTransient
+    public Collection<Reply> getReplies() {
+        return replies;
+    }
 
+    public void setReplies(Collection<Reply> replies) {
+        this.replies = replies;
+    }
+    
     public String getHeader() {
         return header;
     }
@@ -203,15 +209,4 @@ public class Question implements Serializable {
     public void setUsersRatings(Collection<UserQuestionRate> usersRatings) {
         this.usersRatings = usersRatings;
     }
-
-    @XmlTransient
-    @JsonIgnore
-    public Collection<Tag> getTagCollection() {
-        return tagCollection;
-    }
-
-    public void setTagCollection(Collection<Tag> tagCollection) {
-        this.tagCollection = tagCollection;
-    }
-
 }

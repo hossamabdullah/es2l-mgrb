@@ -6,6 +6,9 @@
 package com.hossam.questions.dto;
 
 import com.hossam.abyb.persistence.entities.Question;
+import com.hossam.abyb.persistence.entities.Tag;
+import com.hossam.replies.dto.ReplyDTO;
+import com.hossam.users.dto.UserDTO;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -16,23 +19,30 @@ import java.util.List;
  */
 public class QuestionDTO {
 
-    Integer id;
-    String header;
-    String body;
-    String picturesUrl;
-    Integer up;
-    Integer down;
+    private Integer id;
+    private String header;
+    private String body;
+    private String picturesUrl;
+    private Integer up;
+    private Integer down;
+    
+    private UserDTO userDTO;
+    private List<String> tags;
+    private List<ReplyDTO> replies;
 
     public QuestionDTO() {
     }
 
-    public QuestionDTO(Integer id, String header, String body, String picturesUrl, Integer up, Integer down) {
+    public QuestionDTO(Integer id, String header, String body, String picturesUrl, Integer up, Integer down, UserDTO userDTO, List<String> tags, List<ReplyDTO> replies) {
         this.id = id;
         this.header = header;
         this.body = body;
         this.picturesUrl = picturesUrl;
         this.up = up;
         this.down = down;
+        this.userDTO = userDTO;
+        this.tags = tags;
+        this.replies = replies;
     }
 
     public Integer getId() {
@@ -87,6 +97,30 @@ public class QuestionDTO {
         this.down = down;
     }
 
+    public UserDTO getUserDTO() {
+        return userDTO;
+    }
+
+    public void setUserDTO(UserDTO userDTO) {
+        this.userDTO = userDTO;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public List<ReplyDTO> getReplies() {
+        return replies;
+    }
+
+    public void setReplies(List<ReplyDTO> replies) {
+        this.replies = replies;
+    }
+    
     public static QuestionDTO fromEntity(Question question) {
         QuestionDTO questionDTO = new QuestionDTO();
         questionDTO.setBody(question.getBody());
@@ -95,6 +129,14 @@ public class QuestionDTO {
         questionDTO.setId(question.getId());
         questionDTO.setPicturesUrl(question.getPictureUrl());
         questionDTO.setUp(question.getUp());
+        questionDTO.setUserDTO(UserDTO.fromEntity(question.getOwnerId()));
+        questionDTO.setReplies(ReplyDTO.fromListOfEntities(question.getReplies()));
+        List<String> listOfTags = questionDTO.getTags();
+        listOfTags= new ArrayList<>();
+        for(Tag tag: question.getTags()){
+            listOfTags.add(tag.getTitle());
+        }
+        questionDTO.setTags(listOfTags);
         return questionDTO;
     }
 
